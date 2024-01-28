@@ -131,6 +131,8 @@ bool subtitle_visible = true;
 xm64player_t xm;
 
 wav64_t sinister_laugh;
+wav64_t cartoon_laugh;
+wav64_t evil_laugh;
 
 static const float FRAME_FACTOR = 1.0f/30;
 static const float GRAVITY = 9.8;
@@ -139,11 +141,25 @@ const cpFloat ray_width = 50.0f;
 const cpFloat ray_height = 20.0f;
 
 void play_laugh() {
-    wav64_play(&sinister_laugh, CHANNEL_SFX1);
+    wav64_t *laugh;
 
-    float freq = sinister_laugh.wave.frequency * (((rand() % 200) + 100.0f) / 200);
+    switch (rand() % 3) {
+        case 0:
+            laugh = &sinister_laugh;
+            break;
+        default:
+        case 1:
+            laugh = &cartoon_laugh;
+            break;
+        case 2:
+            laugh = &evil_laugh;
+    }
 
-    debugf("Sample freq original: %f updated: %f\n",sinister_laugh.wave.frequency, freq);
+    wav64_play(laugh, CHANNEL_SFX1);
+
+    float freq = laugh->wave.frequency * (((rand() % 200) + 100.0f) / 200);
+
+    debugf("Sample freq original: %f updated: %f\n",laugh->wave.frequency, freq);
     mixer_ch_set_freq(CHANNEL_SFX1, freq);
 }
 
@@ -775,8 +791,11 @@ int main() {
     attention_ray = sprite_load("rom://attention-ray.sprite");
 
     wav64_open(&sinister_laugh, "rom://sinister_laugh.wav64");
+    wav64_open(&cartoon_laugh, "rom://cartoon_laugh.wav64");
+    wav64_open(&evil_laugh, "rom://evil-laugh.wav64");
 
     xm64player_open(&xm, "rom://circus_clowns.xm64");
+    xm64player_set_vol(&xm, 0.7f);
     xm64player_play(&xm, CHANNEL_MUSIC);
 
     init();
