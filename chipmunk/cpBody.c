@@ -319,7 +319,8 @@ cpBodyRemoveShape(cpBody *body, cpShape *shape)
   shape->next = NULL;
 	
 	if(cpBodyGetType(body) == CP_BODY_TYPE_DYNAMIC && shape->massInfo.m > 0.0f){
-		cpBodyAccumulateMassFromShapes(body);
+	//HACK!!!
+	//	cpBodyAccumulateMassFromShapes(body);
 	}
 }
 
