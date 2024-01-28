@@ -261,7 +261,7 @@ static cpBool handlePlayerRayCollision(cpArbiter *arb, cpSpace *space, void *dat
         if (item_funny) {
             laughometer_level += 0.1f;
         } else {
-            laughometer_level -= 0.05f;
+            laughometer_level -= 0.1f;
         }
     } else {
         play_laugh();
@@ -501,15 +501,15 @@ void update_playing() {
         spawn_ray(50.0f + sub_level * 10.0f);
 
         if (item_funny) {
-            fire_time = curr_time_ms + 500000 + rand() % 3000000;
+            fire_time = curr_time_ms + 300000 + rand() % 2000000;
         } else {
-            fire_time = curr_time_ms + 500000 + rand() % 8000000;
+            fire_time = curr_time_ms + 300000 + rand() % 3000000;
         }
     }
 
-    laughometer_change += 0.001f + (item_funny ? 0: 0.0005f);
+    laughometer_change += 0.001f + (item_funny ? 0: 0.0001f);
 
-    float punishment = -0.0001f - 0.0001f * sub_level;
+    float punishment = -0.00055 - 0.00001f * sub_level;
 
     if (!lung_correct) {
         laughometer_change += punishment;
@@ -519,6 +519,8 @@ void update_playing() {
         laughometer_change += punishment;
     }
 
+    debugf("Change: %f, level: %f\n", laughometer_change, laughometer_level);
+
     if (!lung_correct) {
         title_text = "Breath harder!";
     } else if (!mouth_correct) {
@@ -527,11 +529,13 @@ void update_playing() {
         title_text = "";
     }
 
-    laughometer_change = cpfclamp(laughometer_change, -0.01f, 0.01f);
+    laughometer_change = cpfclamp(laughometer_change, -0.005f, 0.005f);
 
     laughometer_level += laughometer_change;
 
     laughometer_level = cpfclamp(laughometer_level, 0, 2.0f);
+
+    debugf("Change: %f, level: %f\n", laughometer_change, laughometer_level);
 
     joypad_buttons_t pressed  = joypad_get_buttons_pressed(JOYPAD_PORT_1);
 
