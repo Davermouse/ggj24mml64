@@ -86,6 +86,7 @@ static cpSpace *space;
 
 static cpCollisionType RAY = 1;
 static cpCollisionType PLAYER = 2;
+static cpCollisionType NONE = 3;
 
 float laughometer_level = 1.0f;
 float laughometer_change = 0.0f;
@@ -95,6 +96,7 @@ int level = 0;
 int sub_level = 0;
 int level_change_time = 0;
 int game_start_time = 0;
+int last_fire_time = 0;
 int fire_time = 0;
 int high_score = 0;
 int score = 0;
@@ -146,6 +148,12 @@ void play_laugh() {
 }
 
 void spawn_ray(cpFloat speed) {
+    if (last_fire_time + 1000000 > curr_time_ms) {
+        return;
+    }
+
+    last_fire_time = curr_time_ms;
+
     cpFloat mass = 1.0f;
 
     cpBody *rayBody = cpBodyNewKinematic();
@@ -184,11 +192,17 @@ void init() {
     item_pos = cpv(550, 150);
 }
 
+static void changeShapeCollision(cpBody* body, cpShape *shape, void* data) {
+    cpShapeSetCollisionType(shape, NONE);
+}
+
 static void postRayCollide(cpSpace *space, cpBody *ray, void *unused)
 {  
-  // A body can have multiple shapes, so we need to iterate through and delete
+    // A body can have multiple shapes, so we need to iterate through and delete
     cpBodySetType(ray, CP_BODY_TYPE_DYNAMIC);
     cpBodySetMass(ray, 5.0f);
+
+    cpBodyEachShape(ray, (cpBodyShapeIteratorFunc)changeShapeCollision, NULL);
 }
 
 static void removeShape(cpBody* body, cpShape* shape, cpSpace *space) {
