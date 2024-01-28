@@ -42,8 +42,8 @@ typedef enum {
 ItemType levelProgression[] = {
     ITEM_CHEESE,
     ITEM_TAX,
+    ITEM_BEANS,
     ITEM_BRICK,
-    ITEM_BEANS
 };
 
 static int progressionLength = 4;
@@ -153,6 +153,7 @@ void play_laugh() {
             break;
         case 2:
             laugh = &evil_laugh;
+            break;
     }
 
     wav64_play(laugh, CHANNEL_SFX1);
@@ -368,6 +369,7 @@ void start_starting() {
 
 void new_game() {
     level = 0;
+    sub_level = 0;
     score = 0;
     game_start_time = curr_time_ms;
 
@@ -496,14 +498,18 @@ void update_playing() {
     }
 
     if (fire_time < curr_time_ms) {
-        spawn_ray(50.0f + sub_level * 20.0f);
+        spawn_ray(50.0f + sub_level * 10.0f);
 
-        fire_time = curr_time_ms + 500000 + rand() % 5000000;
+        if (item_funny) {
+            fire_time = curr_time_ms + 500000 + rand() % 3000000;
+        } else {
+            fire_time = curr_time_ms + 500000 + rand() % 8000000;
+        }
     }
 
-    laughometer_change += 0.001f;
+    laughometer_change += 0.001f + (item_funny ? 0: 0.0005f);
 
-    float punishment = -0.0001f -0.0003f * sub_level;
+    float punishment = -0.0001f - 0.0001f * sub_level;
 
     if (!lung_correct) {
         laughometer_change += punishment;
@@ -545,7 +551,7 @@ void update_playing() {
 
         play_laugh();
 
-        if (sub_level > 3) {
+        if (sub_level > 3 * (level + 1)) {
             next_level();
         }
     }
@@ -599,9 +605,14 @@ void update_game_over() {
 static void updateBody(cpBody *body, void* data) {
     cpVect pos = cpBodyGetPosition(body);
 
-    if (body == itemBody) return;
-
     if (pos.y > 700 || pos.x < -50 || pos.x > 700) {
+        if (body == itemBody && cpBodyGetType(body) == CP_BODY_TYPE_DYNAMIC)
+        {
+            cpBodySetPosition(body, cpv(1000, 1000));
+            return;
+        }
+
+
         cpSpaceAddPostStepCallback(
             space, (cpPostStepFunc)postStepRemoveBody, body, NULL
         );
